@@ -13,6 +13,17 @@
 
     <div class="card">
         <div class="card-body">
+            @if(optional($order->package)->image_path)
+                <div class="mb-6 overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-100 dark:border-slate-800/70 dark:bg-slate-950/30">
+                    <img
+                        src="{{ asset('storage/' . $order->package->image_path) }}"
+                        alt="Preview {{ $order->package->name }}"
+                        class="aspect-video w-full object-cover"
+                        loading="lazy"
+                    />
+                </div>
+            @endif
+
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Order Code</p>

@@ -30,6 +30,9 @@ class OrderController extends Controller
             'status' => 'pending'
         ]);
 
+        // Load package for UI preview in checkout page
+        $order->setRelation('package', $package);
+
         $params = [
             'transaction_details' => [
                 'order_id' => $order->order_code,
@@ -199,6 +202,8 @@ class OrderController extends Controller
         ];
 
         $snapToken = Snap::getSnapToken($params);
+
+        $order->loadMissing('package');
 
         return view('checkout', compact('snapToken', 'order'));
     }

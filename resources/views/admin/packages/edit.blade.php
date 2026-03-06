@@ -24,7 +24,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin.packages.update', $package->id) }}" class="space-y-5">
+            <form method="POST" action="{{ route('admin.packages.update', $package->id) }}" class="space-y-5" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -41,6 +41,19 @@
                 <div>
                     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-50">Harga</label>
                     <input name="price" value="{{ old('price', $package->price) }}" inputmode="numeric" class="mt-2 w-full rounded-xl border-slate-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-900 dark:text-slate-50">Foto / Preview</label>
+
+                    @if($package->image_path)
+                        <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-50 dark:border-slate-800/70 dark:bg-slate-950/30">
+                            <img src="{{ asset('storage/' . $package->image_path) }}" alt="Preview {{ $package->name }}" class="aspect-video w-full object-cover" />
+                        </div>
+                    @endif
+
+                    <input name="image" type="file" accept="image/png,image/jpeg,image/webp" class="mt-3 block w-full text-sm text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800 dark:text-slate-200 dark:file:bg-slate-100 dark:file:text-slate-900 dark:hover:file:bg-white" />
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Upload baru untuk mengganti gambar lama. JPG/PNG/WebP, maks 2MB.</p>
                 </div>
 
                 <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">

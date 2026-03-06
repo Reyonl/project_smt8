@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Jasa Website') }}</title>
+        <title>{{ config('app.name') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -16,11 +16,29 @@
     </head>
 
     <body class="min-h-full">
-        <div x-data="{ open: false }" class="min-h-screen">
+        <div
+            x-data="{
+                open: false,
+                isDark: false,
+                init() {
+                    const saved = localStorage.getItem('theme');
+                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    this.isDark = (saved === 'dark') || (!saved && prefersDark);
+                    document.documentElement.classList.toggle('dark', this.isDark);
+                },
+                toggleTheme() {
+                    this.isDark = !this.isDark;
+                    document.documentElement.classList.toggle('dark', this.isDark);
+                    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                }
+            }"
+            class="min-h-screen"
+        >
             <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-900 focus:shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:bg-slate-950 dark:focus:text-slate-50">
                 Skip to content
             </a>
 
+            <!-- HEADER: layouts.app -->
             <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/70">
                 <div class="container-app">
                     <div class="flex h-16 items-center justify-between">
@@ -29,7 +47,7 @@
                                 <span class="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white shadow-sm">
                                     <span class="text-sm">JW</span>
                                 </span>
-                                <span class="hidden sm:block">{{ config('app.name', 'Jasa Website') }}</span>
+                                <span class="hidden sm:block">{{ config('app.name') }}</span>
                             </a>
 
                             <nav class="hidden items-center gap-1 md:flex">
@@ -68,20 +86,23 @@
                                 <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
                             @endauth
 
-                            <button
-                                type="button"
-                                class="btn btn-outline"
-                                x-data="{}"
-                                x-on:click="
-                                    document.documentElement.classList.toggle('dark');
-                                    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-                                "
-                                x-init="
-                                    const saved = localStorage.getItem('theme');
-                                    if (saved === 'dark') document.documentElement.classList.add('dark');
-                                "
-                            >
-                                Tema
+                            <button type="button" class="btn btn-outline px-3" @click="toggleTheme()" :aria-label="isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'" :title="isDark ? 'Mode gelap: ON' : 'Mode terang: ON'">
+                                <!-- Sun -->
+                                <svg x-show="isDark" x-cloak class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" />
+                                    <path d="M12 2v2" />
+                                    <path d="M12 20v2" />
+                                    <path d="m4.93 4.93 1.41 1.41" />
+                                    <path d="m17.66 17.66 1.41 1.41" />
+                                    <path d="M2 12h2" />
+                                    <path d="M20 12h2" />
+                                    <path d="m6.34 17.66-1.41 1.41" />
+                                    <path d="m19.07 4.93-1.41 1.41" />
+                                </svg>
+                                <!-- Moon -->
+                                <svg x-show="!isDark" x-cloak class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 3a7 7 0 1 0 9 9 9 9 0 0 1-9-9Z" />
+                                </svg>
                             </button>
                         </div>
 
@@ -123,19 +144,24 @@
                                 <a href="{{ route('register') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">Register</a>
                             @endauth
 
-                            <button
-                                type="button"
-                                class="mt-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
-                                x-on:click="
-                                    document.documentElement.classList.toggle('dark');
-                                    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-                                "
-                                x-init="
-                                    const saved = localStorage.getItem('theme');
-                                    if (saved === 'dark') document.documentElement.classList.add('dark');
-                                "
-                            >
-                                Toggle Tema
+                            <button type="button" class="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900" @click="toggleTheme()">
+                                <span x-text="isDark ? 'Mode terang' : 'Mode gelap'"></span>
+                                <span class="ml-auto">
+                                    <svg x-show="isDark" x-cloak class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" />
+                                        <path d="M12 2v2" />
+                                        <path d="M12 20v2" />
+                                        <path d="m4.93 4.93 1.41 1.41" />
+                                        <path d="m17.66 17.66 1.41 1.41" />
+                                        <path d="M2 12h2" />
+                                        <path d="M20 12h2" />
+                                        <path d="m6.34 17.66-1.41 1.41" />
+                                        <path d="m19.07 4.93-1.41 1.41" />
+                                    </svg>
+                                    <svg x-show="!isDark" x-cloak class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 3a7 7 0 1 0 9 9 9 9 0 0 1-9-9Z" />
+                                    </svg>
+                                </span>
                             </button>
                         </nav>
                     </div>
@@ -148,11 +174,12 @@
                 </div>
             </main>
 
+            <!-- FOOTER: layouts.app -->
             <footer class="border-t border-slate-200/70 py-10 dark:border-slate-800/70">
                 <div class="container-app">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p class="text-sm text-slate-600 dark:text-slate-300">
-                            © {{ date('Y') }} {{ config('app.name', 'Jasa Website') }}. All rights reserved.
+                            © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
                         </p>
                         <p class="text-sm text-slate-500 dark:text-slate-400">
                             Dibuat untuk flow order yang cepat, jelas, dan aman.

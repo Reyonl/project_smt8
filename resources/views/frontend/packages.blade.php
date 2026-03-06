@@ -23,6 +23,20 @@
         <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             @foreach($packages as $p)
                 <div class="group card overflow-hidden">
+                    <div class="relative overflow-hidden border-b border-slate-200/70 bg-slate-100 dark:border-slate-800/70 dark:bg-slate-950/30">
+                        @if($p->image_path)
+                            <img
+                                src="{{ asset('storage/' . $p->image_path) }}"
+                                alt="Preview {{ $p->name }}"
+                                class="aspect-video w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                                loading="lazy"
+                            />
+                        @else
+                            <div class="aspect-video w-full grid place-items-center text-sm font-semibold text-slate-500 dark:text-slate-400">
+                                Preview belum tersedia
+                            </div>
+                        @endif
+                    </div>
                     <div class="card-body flex h-full flex-col">
                         <div class="flex items-start justify-between gap-4">
                             <div class="min-w-0">

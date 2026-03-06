@@ -9,7 +9,8 @@ class Package extends Model
     protected $fillable = [
         'name',
         'description',
-        'price'
+        'price',
+        'image_path',
     ];
 
     public function orders()

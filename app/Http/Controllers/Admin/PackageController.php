@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PackageController extends Controller
 {
@@ -30,7 +31,12 @@ class PackageController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('packages', 'public');
+        }
 
         Package::create($data);
 
@@ -49,7 +55,16 @@ class PackageController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($package->image_path) {
+                Storage::disk('public')->delete($package->image_path);
+            }
+
+            $data['image_path'] = $request->file('image')->store('packages', 'public');
+        }
 
         $package->update($data);
 
@@ -58,6 +73,10 @@ class PackageController extends Controller
 
     public function destroy(Package $package)
     {
+        if ($package->image_path) {
+            Storage::disk('public')->delete($package->image_path);
+        }
+
         $package->delete();
 
         return redirect()->route('admin.packages.index')->with('success', 'Package deleted');

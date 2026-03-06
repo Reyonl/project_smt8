@@ -21,6 +21,26 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Project Notes (Jasa Websites)
+
+### Package preview images
+
+This project supports **package preview images** uploaded from the admin panel.
+
+- **Run migrations** (adds `packages.image_path`):
+
+```bash
+php artisan migrate
+```
+
+- **Create the public storage symlink** (so images are accessible via `public/storage`):
+
+```bash
+php artisan storage:link
+```
+
+- **Upload images** via: `Admin → Kelola Paket → (Create/Edit)`.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
