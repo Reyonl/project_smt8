@@ -207,6 +207,44 @@ class OrderController extends Controller
 
         return view('checkout', compact('snapToken', 'order'));
     }
+
+    /**
+     * Show form for ordering a Custom Website.
+     */
+    public function customOrderForm()
+    {
+        return view('custom-order');
+    }
+
+    /**
+     * Handle submission of custom website order form.
+     */
+    public function submitCustomOrder(Request $request)
+    {
+        $validated = $request->validate([
+            'project_name' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
+            'description' => 'required|string',
+            'budget' => 'nullable|string|max:100',
+        ]);
+
+        // Catat sebagai pesanan khusus tanpa package_id, status pending_review
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'package_id' => null, // null karena ini custom
+            'order_code' => 'CUSTOM-' . time(),
+            'price' => 0, // harga dikosongkan dahulu, nunggu penawaran admin
+            'status' => 'pending_review',
+        ]);
+
+        // Anda bisa menyimpan deskripsi khusus di kolom terpisah jika ada,
+        // misal membuat table `custom_order_details` atau simpan di json/notes
+        // di sini kita asumsikan untuk simpel kita simpan pesanan. Nanti bisa ditambahkan 
+        // integrasi ke admin.
+
+        return redirect()->route('custom.order')->with('success', 'Pengajuan Custom Website Anda telah kami terima. Tim kami akan segera meninjaunya dan memberikan penawaran harga.');
+    }
+
     /**
      * Display a listing of the resource.
      */

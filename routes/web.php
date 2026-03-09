@@ -35,8 +35,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('my.orders');
 
-    // View a single order and retry payment for pending orders
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('order.show');
+
+    // Custom Order Routes
+    Route::get('/custom-order', [OrderController::class, 'customOrderForm'])->name('custom.order');
+    Route::post('/custom-order', [OrderController::class, 'submitCustomOrder'])->name('custom.order.store');
 
     Route::get('/checkout/retry/{order}', [OrderController::class, 'retry'])->name('checkout.retry');
 
@@ -60,6 +63,9 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     Route::resource('packages', AdminPackageController::class, ['as' => 'admin']);
 
     Route::get('/orders', [AdminOrderController::class,'index'])->name('admin.orders');
+    Route::get('/orders/{order}', [AdminOrderController::class,'show'])->name('admin.orders.show');
+    Route::put('/orders/{order}/update-price', [AdminOrderController::class,'updatePrice'])->name('admin.orders.update_price');
+    Route::put('/orders/{order}/cancel', [AdminOrderController::class,'cancel'])->name('admin.orders.cancel');
 
 });
 
