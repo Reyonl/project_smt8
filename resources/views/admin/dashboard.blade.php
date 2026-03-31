@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@endpush
+
 @section('content')
 
 <div class="flex flex-col gap-8 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,8 +28,8 @@
         </div>
     </div>
 
-    <div class="grid gap-6 md:grid-cols-3">
-        <!-- Card 1 -->
+    <div class="grid gap-6 md:grid-cols-4">
+        <!-- Card 1: Total Orders -->
         <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
             <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
             <div class="relative z-10 flex flex-col h-full justify-between">
@@ -38,10 +42,22 @@
                     </div>
                 </div>
                 <p class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">{{ $totalOrders }}</p>
+                @if($ordersGrowth != 0)
+                    <div class="mt-2 flex items-center gap-1">
+                        <span @class([
+                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold',
+                            'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400' => $ordersGrowth > 0,
+                            'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-400' => $ordersGrowth < 0
+                        ])>
+                            {{ $ordersGrowth > 0 ? '+' : '' }}{{ number_format($ordersGrowth, 1) }}%
+                        </span>
+                        <span class="text-xs text-slate-500">vs bln lalu</span>
+                    </div>
+                @endif
             </div>
         </div>
 
-        <!-- Card 2 -->
+        <!-- Card 2: Revenue -->
         <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
             <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
             <div class="relative z-10 flex flex-col h-full justify-between">
@@ -50,34 +66,109 @@
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Revenue (Paid)</p>
+                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Revenue</p>
                     </div>
                 </div>
                 <p class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-400 dark:to-blue-400">
                     Rp {{ number_format($totalRevenue, 0, ',', '.') }}
                 </p>
+                @if($revenueGrowth != 0)
+                    <div class="mt-2 flex items-center gap-1">
+                        <span @class([
+                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold',
+                            'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400' => $revenueGrowth > 0,
+                            'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-400' => $revenueGrowth < 0
+                        ])>
+                            {{ $revenueGrowth > 0 ? '+' : '' }}{{ number_format($revenueGrowth, 1) }}%
+                        </span>
+                        <span class="text-xs text-slate-500">vs bln lalu</span>
+                    </div>
+                @endif
             </div>
         </div>
 
-        <!-- Card 3 -->
+        <!-- Card 3: AOV -->
         <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
             <div class="relative z-10 flex flex-col h-full justify-between">
                 <div class="flex items-center gap-4 mb-4">
-                    <div class="p-3 bg-fuchsia-50 dark:bg-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-400 rounded-2xl">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                    <div class="p-3 bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Packages</p>
+                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Avg. Order Value</p>
                     </div>
                 </div>
-                <p class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">{{ $totalPackages }}</p>
+                <p class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Rp {{ number_format($aov, 0, ',', '.') }}
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Recent Orders -->
-    <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden mt-6">
+    <!-- Charts Section -->
+    <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Performance Chart -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden p-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Performa Bisnis</h2>
+                    <p class="text-sm text-slate-500">Pendapatan & volume pesanan.</p>
+                </div>
+                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl" x-data="{ period: 'daily' }">
+                    <button @click="period = 'daily'; updateChart('daily')" :class="period === 'daily' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 text-xs font-bold rounded-lg transition-all">Harian</button>
+                    <button @click="period = 'weekly'; updateChart('weekly')" :class="period === 'weekly' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 text-xs font-bold rounded-lg transition-all">Mingguan</button>
+                    <button @click="period = 'monthly'; updateChart('monthly')" :class="period === 'monthly' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 text-xs font-bold rounded-lg transition-all">Bulanan</button>
+                </div>
+            </div>
+            <div class="relative h-80 w-full">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Package Distribution -->
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden p-8">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-1">Populeritas Paket</h2>
+            <p class="text-sm text-slate-500 mb-8">Distribusi pesanan per jenis paket.</p>
+            <div class="relative h-64 w-full">
+                <canvas id="packageChart"></canvas>
+            </div>
+            <div class="mt-6 flex flex-col gap-2">
+                @foreach($packageDistribution->take(4) as $item)
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-600 dark:text-slate-400">{{ $item['name'] }}</span>
+                        <span class="font-bold text-slate-900 dark:text-white">{{ $item['count'] }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-3 mt-6">
+        <!-- Status Breakdown -->
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden p-8">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-6">Status Pesanan</h2>
+            <div class="flex flex-col gap-4">
+                @foreach($statusBreakdown as $sb)
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40">
+                        <div class="flex items-center gap-3">
+                            <span @class([
+                                'w-3 h-3 rounded-full',
+                                'bg-emerald-500' => $sb->status === 'paid',
+                                'bg-blue-500' => $sb->status === 'pending_review',
+                                'bg-amber-500' => $sb->status === 'pending',
+                                'bg-rose-500' => !in_array($sb->status, ['paid', 'pending', 'pending_review'])
+                            ])></span>
+                            <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ ucfirst(str_replace('_', ' ', $sb->status)) }}</span>
+                        </div>
+                        <span class="text-lg font-bold text-slate-900 dark:text-white">{{ $sb->count }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Recent Orders (Moved inside grid or kept outside) -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden">
         <div class="p-6 md:px-8 md:py-6 flex flex-col sm:flex-row items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
             <div class="flex items-center gap-3 mb-4 sm:mb-0">
                 <div class="p-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg">
@@ -158,3 +249,105 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    const chartData = {
+        daily: @json($dailyData),
+        weekly: @json($weeklyData),
+        monthly: @json($monthlyData)
+    };
+
+    const packageData = @json($packageDistribution);
+
+    let perfChart;
+    let pkgChart;
+
+    function initCharts(perfData, pkgData) {
+        // Line Chart
+        const ctxPerf = document.getElementById('performanceChart').getContext('2d');
+        perfChart = new Chart(ctxPerf, {
+            type: 'line',
+            data: {
+                labels: perfData.labels,
+                datasets: [
+                    {
+                        label: 'Revenue (IDR)',
+                        data: perfData.revenue,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Total Orders',
+                        data: perfData.counts,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'transparent',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        grid: { display: false },
+                        ticks: { callback: value => 'Rp ' + (value/1000000).toFixed(1) + 'jt' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: true },
+                        min: 0
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Doughnut Chart
+        const ctxPkg = document.getElementById('packageChart').getContext('2d');
+        pkgChart = new Chart(ctxPkg, {
+            type: 'doughnut',
+            data: {
+                labels: pkgData.map(i => i.name),
+                datasets: [{
+                    data: pkgData.map(i => i.count),
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
+                    borderWidth: 0,
+                    cutout: '75%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    function updateChart(period) {
+        const data = chartData[period];
+        perfChart.data.labels = data.labels;
+        perfChart.data.datasets[0].data = data.revenue;
+        perfChart.data.datasets[1].data = data.counts;
+        perfChart.update();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initCharts(chartData.daily, packageData);
+    });
+</script>
+@endpush

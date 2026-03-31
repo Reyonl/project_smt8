@@ -86,6 +86,47 @@
                                 <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
                             @endauth
 
+                            @auth
+                                <!-- Notifications -->
+                                <div class="relative" x-data="{ open: false }">
+                                    <button @click="open = !open" class="relative rounded-xl p-2 text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900 focus:outline-none">
+                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                        </svg>
+                                        @if(auth()->user()->unreadNotifications->count() > 0)
+                                            <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-950"></span>
+                                        @endif
+                                    </button>
+
+                                    <!-- Notifications Dropdown -->
+                                    <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-80 origin-top-right rounded-2xl border border-slate-200 bg-white py-2 shadow-xl dark:border-slate-800 dark:bg-slate-950">
+                                        <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Notifikasi</h3>
+                                        </div>
+                                        <div class="max-h-64 overflow-y-auto">
+                                            @forelse(auth()->user()->unreadNotifications as $notification)
+                                                <a href="{{ $notification->data['url'] ?? '#' }}" class="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-slate-50 dark:border-slate-900 last:border-0">
+                                                    <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $notification->data['message'] }}</p>
+                                                    <p class="mt-1 text-xs text-slate-500">{{ $notification->created_at->diffForHumans() }}</p>
+                                                </a>
+                                            @empty
+                                                <div class="px-4 py-8 text-center">
+                                                    <p class="text-sm text-slate-500 italic">Tidak ada notifikasi baru</p>
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                        @if(auth()->user()->unreadNotifications->count() > 0)
+                                            <div class="px-4 py-2 text-center border-t border-slate-100 dark:border-slate-800">
+                                                <form action="{{ route('notifications.read') }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="text-xs font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">Tandai sudah dibaca</button>
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endauth
+
                             <button type="button" class="btn btn-outline px-3" @click="toggleTheme()" :aria-label="isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'" :title="isDark ? 'Mode gelap: ON' : 'Mode terang: ON'">
                                 <!-- Sun -->
                                 <svg x-show="isDark" x-cloak class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

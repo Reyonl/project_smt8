@@ -4,9 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderService;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    protected $orderService;
+
+    public function __construct(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
 
     public function index()
     {
@@ -16,7 +24,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load('package', 'user', 'payment');
+        $order->load('package', 'user', 'payment', 'discussions.user', 'assets', 'brief');
         return view('admin.orders.show', compact('order'));
     }
 
@@ -27,10 +35,10 @@ class OrderController extends Controller
         ]);
 
         if ($order->status === 'pending_review' && !$order->package_id) {
-            $order->update([
+            $this->orderService->updateData($order, [
                 'price' => $request->price,
-                'status' => 'pending' // Setelah harga diset, status jadi pending (harus dibayar user)
-            ]);
+                'status' => 'pending'
+            ], 'Harga custom order Anda telah ditentukan. Silakan lakukan pembayaran.');
 
             return redirect()->route('admin.orders.show', $order->id)->with('success', 'Harga custom order berhasil diset. Status pesanan sekarang Menunggu Pembayaran dari klien.');
         }
@@ -54,5 +62,20 @@ class OrderController extends Controller
         ]);
 
         return redirect()->route('admin.orders.show', $order->id)->with('success', 'Pesanan berhasil dibatalkan secara manual.');
+    }
+
+    public function updateStage(Request $request, Order $order)
+    {
+        $request->validate([
+            'project_stage' => 'required|string|max:255'
+        ]);
+
+        if ($order->status !== 'paid') {
+            return back()->with('error', 'Hanya pesanan berstatus Lunas (Paid) yang memiliki Project Stage.');
+        }
+
+        $this->orderService->updateStage($order, $request->project_stage);
+
+        return back()->with('success', 'Project Stage berhasil di-update. Klien dapat melihat perubahan ini di dashboard mereka.');
     }
 }
