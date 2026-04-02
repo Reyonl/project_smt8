@@ -68,6 +68,67 @@
                                 @else
                                     <a href="{{ route('dashboard') }}" class="btn btn-outline">Dashboard</a>
                                     <a href="{{ route('my.orders') }}" class="btn btn-outline">Pesanan</a>
+
+                                    {{-- Bell Notification --}}
+                                    <div class="relative" x-data="{ notifOpen: false }">
+                                        <button @click="notifOpen = !notifOpen" @click.away="notifOpen = false" type="button" class="relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                            @if(auth()->user()->unreadNotifications->count() > 0)
+                                                <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-[1.1rem] h-[1.1rem] px-1 text-[0.6rem] font-bold text-white bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-950">
+                                                    {{ auth()->user()->unreadNotifications->count() }}
+                                                </span>
+                                            @endif
+                                        </button>
+
+                                        {{-- Dropdown Panel --}}
+                                        <div x-show="notifOpen" x-cloak x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-2 w-80 origin-top-right rounded-2xl bg-white dark:bg-slate-900 shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden z-50">
+                                            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                                <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Notifikasi</p>
+                                                @if(auth()->user()->unreadNotifications->count() > 0)
+                                                    <span class="text-xs font-semibold text-rose-500">{{ auth()->user()->unreadNotifications->count() }} baru</span>
+                                                @endif
+                                            </div>
+                                            <div class="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                                                @forelse(auth()->user()->notifications->take(7) as $notif)
+                                                    @php $notif->markAsRead(); @endphp
+                                                    <a href="{{ route('my.orders') }}" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                                                        <div class="mt-0.5 flex-shrink-0">
+                                                            @if(($notif->data['status_message'] ?? '') === 'Disetujui')
+                                                                <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
+                                                                    <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                                                </div>
+                                                            @else
+                                                                <div class="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center">
+                                                                    <svg class="w-4 h-4 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                                                                Pesanan {{ $notif->data['order_code'] ?? '' }}
+                                                                <span class="ml-1 font-medium {{ ($notif->data['status_message'] ?? '') === 'Disetujui' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">{{ $notif->data['status_message'] ?? '' }}</span>
+                                                            </p>
+                                                            @if(!empty($notif->data['admin_notes']))
+                                                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{{ $notif->data['admin_notes'] }}</p>
+                                                            @endif
+                                                            @if(!empty($notif->data['price']))
+                                                                <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-1">Harga: Rp {{ number_format($notif->data['price'], 0, ',', '.') }}</p>
+                                                            @endif
+                                                            <p class="text-[0.65rem] text-slate-400 mt-1">{{ $notif->created_at->diffForHumans() }}</p>
+                                                        </div>
+                                                    </a>
+                                                @empty
+                                                    <div class="flex flex-col items-center justify-center py-8 text-center">
+                                                        <svg class="w-10 h-10 text-slate-300 dark:text-slate-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                                        <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada notifikasi</p>
+                                                    </div>
+                                                @endforelse
+                                            </div>
+                                            <div class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-center">
+                                                <a href="{{ route('my.orders') }}" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Lihat Semua Pesanan &rarr;</a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endif
 
                                 <div class="h-6 w-px bg-slate-200 dark:bg-slate-800"></div>

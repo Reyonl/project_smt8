@@ -18,6 +18,50 @@
                 </div>
             </div>
 
+            <!-- Notification Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <x-dropdown align="right" width="64">
+                    <x-slot name="trigger">
+                        <button class="relative inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                            @if(Auth::user()->unreadNotifications->count() > 0)
+                                <span class="absolute top-1 right-2 inline-flex items-center justify-center px-1.5 py-0.5 text-[0.65rem] font-bold leading-none text-white bg-rose-600 rounded-full">{{ Auth::user()->unreadNotifications->count() }}</span>
+                            @endif
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+                        <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                            <h3 class="text-xs uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400">Notifikasi Pesanan</h3>
+                        </div>
+                        <div class="max-h-60 overflow-y-auto">
+                            @forelse(Auth::user()->notifications->take(5) as $notification)
+                                <a href="{{ route('my.orders') }}" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition border-b border-gray-50 dark:border-gray-700/50 {{ $notification->read_at ? 'opacity-70' : 'bg-blue-50/50 dark:bg-blue-900/10' }}">
+                                    <p class="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center justify-between">
+                                        {{ $notification->data['status_message'] ?? 'Pembaruan Pesanan' }}
+                                        @if(!$notification->read_at)
+                                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                        {{ $notification->data['admin_notes'] ?? 'Cek detail pesanan Anda.' }}
+                                    </p>
+                                    <p class="text-[0.65rem] font-medium text-gray-400 mt-2">{{ $notification->created_at->diffForHumans() }}</p>
+                                </a>
+                                @php $notification->markAsRead(); @endphp
+                            @empty
+                                <div class="px-4 py-6 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                    Belum ada notifikasi baru.
+                                </div>
+                            @endforelse
+                            <div class="px-4 py-2 text-center border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
+                                <a href="{{ route('my.orders') }}" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">Lihat Semua Pesanan</a>
+                            </div>
+                        </div>
+                    </x-slot>
+                </x-dropdown>
+            </div>
+
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
