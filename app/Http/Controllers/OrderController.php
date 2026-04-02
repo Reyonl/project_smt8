@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Midtrans\Config;
-use Midtrans\Snap;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\Payment;
@@ -11,13 +9,20 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-     public function __construct()
+    public function dashboard()
     {
-        Config::$serverKey = config('midtrans.serverKey');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        $user = auth()->user();
+        $totalOrders = Order::where('user_id', $user->id)->count();
+        $pendingOrders = Order::where('user_id', $user->id)->where('status', 'pending')->count();
+        $paidOrders = Order::where('user_id', $user->id)->where('status', 'paid')->count();
+        $totalSpent = Order::where('user_id', $user->id)->where('status', 'paid')->sum('price');
+        $recentOrders = Order::where('user_id', $user->id)->with('package')->latest()->take(5)->get();
+
+        return view('user.dashboard', compact(
+            'totalOrders', 'pendingOrders', 'paidOrders', 'totalSpent', 'recentOrders'
+        ));
     }
+
     public function checkout($id)
     {
         $package = Package::findOrFail($id);
@@ -33,123 +38,49 @@ class OrderController extends Controller
         // Load package for UI preview in checkout page
         $order->setRelation('package', $package);
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $order->order_code,
-                'gross_amount' => $order->price,
-            ],
-            'customer_details' => [
-                'first_name' => auth()->user()->name,
-                'email' => auth()->user()->email,
-            ],
-        ];
-
-        $snapToken = Snap::getSnapToken($params);
-
-        return view('checkout', compact('snapToken', 'order'));
+        return view('checkout', compact('order'));
     }
 
     /**
-     * Handle payment result from the client (Snap onSuccess/onPending/onError).
+     * Tampilkan Dummy Gateway
      */
-    public function paymentResult(Request $request)
+    public function manualPayment(Order $order)
     {
-        $data = $request->all();
-
-        // Expecting Midtrans result object posted from the client
-        $orderCode = $data['order_id'] ?? null; // this is the order_id we set in transaction_details
-
-        if (! $orderCode) {
-            return response()->json(['message' => 'order_id missing'], 422);
+        if ($order->user_id !== auth()->id() || $order->status === 'paid') {
+            abort(403, 'Akses tidak sah atau pesanan sudah dibayar.');
         }
 
-        $order = Order::where('order_code', $orderCode)->first();
+        $order->load('package');
+        return view('payment-upload', compact('order'));
+    }
 
-        if (! $order) {
-            return response()->json(['message' => 'Order not found'], 404);
+    /**
+     * Proses hasil dari Dummy Gateway
+     */
+    public function processManualPayment(Request $request, Order $order)
+    {
+        if ($order->user_id !== auth()->id() || $order->status === 'paid') {
+            abort(403);
         }
 
-        // Create or update payment record
-        $payment = Payment::create([
-            'order_id' => $order->id,
-            'transaction_id' => $data['transaction_id'] ?? null,
-            'payment_type' => $data['payment_type'] ?? null,
-            'status' => $data['transaction_status'] ?? ($data['status'] ?? 'unknown'),
+        $request->validate([
+            'proof_image' => 'required|image|max:5120'
         ]);
 
-        // Map Midtrans statuses to our order status
-        $txStatus = $data['transaction_status'] ?? ($data['status'] ?? null);
+        $path = $request->file('proof_image')->store('payment_proofs', 'public');
 
-        if (in_array($txStatus, ['capture', 'settlement'])) {
-            $order->status = 'paid';
-        } elseif (in_array($txStatus, ['pending'])) {
-            $order->status = 'pending';
-        } else {
-            $order->status = 'failed';
-        }
+        Payment::create([
+            'order_id' => $order->id,
+            'transaction_id' => 'MANUAL-' . strtoupper(uniqid()),
+            'payment_type' => 'bank_transfer',
+            'status' => 'pending',
+            'proof_image' => $path
+        ]);
 
+        $order->status = 'pending_verification';
         $order->save();
 
-        return response()->json(['message' => 'Payment recorded', 'order_status' => $order->status]);
-    }
-
-    /**
-     * Handle Midtrans server-to-server notification (HTTP POST).
-     * This endpoint verifies signature_key and updates payment/order accordingly.
-     */
-    public function notification(Request $request)
-    {
-        $data = $request->all();
-
-        // Required fields from Midtrans
-        $orderId = $data['order_id'] ?? null;
-        $statusCode = $data['status_code'] ?? null;
-        $grossAmount = $data['gross_amount'] ?? null;
-        $signatureKey = $data['signature_key'] ?? null;
-
-        if (! $orderId || ! $statusCode || ! $grossAmount || ! $signatureKey) {
-            return response('Bad Request', 400);
-        }
-
-        // verify signature
-        $serverKey = config('midtrans.serverKey');
-        $expected = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-
-        if (! hash_equals($expected, $signatureKey)) {
-            return response('Invalid signature', 403);
-        }
-
-        // find order
-        $order = Order::where('order_code', $orderId)->first();
-        if (! $order) {
-            return response('Order not found', 404);
-        }
-
-        // create or update payment
-        $payment = Payment::updateOrCreate(
-            ['transaction_id' => $data['transaction_id'] ?? null],
-            [
-                'order_id' => $order->id,
-                'transaction_id' => $data['transaction_id'] ?? null,
-                'payment_type' => $data['payment_type'] ?? null,
-                'status' => $data['transaction_status'] ?? ($data['status'] ?? null),
-            ]
-        );
-
-        $txStatus = $data['transaction_status'] ?? ($data['status'] ?? null);
-
-        if (in_array($txStatus, ['capture', 'settlement'])) {
-            $order->status = 'paid';
-        } elseif (in_array($txStatus, ['pending'])) {
-            $order->status = 'pending';
-        } else {
-            $order->status = 'failed';
-        }
-
-        $order->save();
-
-        // respond OK so Midtrans knows notification was received
-        return response('OK', 200);
+        return redirect()->route('my.orders')->with('success', 'Bukti pembayaran berhasil diunggah. Silakan menunggu konfirmasi Admin.');
     }
 
     /**
@@ -177,7 +108,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Retry payment for an existing order: generate a new Snap token and return checkout view.
+     * Retry payment for an existing order by showing checkout view without regenerating token.
      */
     public function retry(Order $order)
     {
@@ -190,22 +121,9 @@ class OrderController extends Controller
             return redirect()->route('my.orders')->with('info', 'Order already paid.');
         }
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $order->order_code,
-                'gross_amount' => $order->price,
-            ],
-            'customer_details' => [
-                'first_name' => auth()->user()->name,
-                'email' => auth()->user()->email,
-            ],
-        ];
-
-        $snapToken = Snap::getSnapToken($params);
-
         $order->loadMissing('package');
 
-        return view('checkout', compact('snapToken', 'order'));
+        return view('checkout', compact('order'));
     }
 
     /**
@@ -228,73 +146,44 @@ class OrderController extends Controller
             'budget' => 'nullable|string|max:100',
         ]);
 
-        // Catat sebagai pesanan khusus tanpa package_id, status pending_review
         $order = Order::create([
             'user_id' => auth()->id(),
-            'package_id' => null, // null karena ini custom
+            'package_id' => null, 
             'order_code' => 'CUSTOM-' . time(),
-            'price' => 0, // harga dikosongkan dahulu, nunggu penawaran admin
+            'price' => 0, 
             'status' => 'pending_review',
+            'custom_details' => [
+                'project_name' => $validated['project_name'],
+                'category' => $validated['category'],
+                'description' => $validated['description'],
+                'budget' => $validated['budget'] ?? null,
+            ]
         ]);
-
-        // Anda bisa menyimpan deskripsi khusus di kolom terpisah jika ada,
-        // misal membuat table `custom_order_details` atau simpan di json/notes
-        // di sini kita asumsikan untuk simpel kita simpan pesanan. Nanti bisa ditambahkan 
-        // integrasi ke admin.
 
         return redirect()->route('custom.order')->with('success', 'Pengajuan Custom Website Anda telah kami terima. Tim kami akan segera meninjaunya dan memberikan penawaran harga.');
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
     }
 
-    /**
-     * Display the specified resource.
-     */
-    
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Order $order)
     {
-        //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Order $order)
     {
-        //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Order $order)
     {
-        //
     }
 }

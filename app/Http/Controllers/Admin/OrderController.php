@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Notifications\CustomOrderReviewed;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -29,8 +31,10 @@ class OrderController extends Controller
         if ($order->status === 'pending_review' && !$order->package_id) {
             $order->update([
                 'price' => $request->price,
-                'status' => 'pending' // Setelah harga diset, status jadi pending (harus dibayar user)
+                'status' => 'pending' 
             ]);
+
+            $order->user->notify(new CustomOrderReviewed($order, 'Disetujui', 'Pesanan Custom Anda disetujui. Silakan lakukan pembayaran.'));
 
             return redirect()->route('admin.orders.show', $order->id)->with('success', 'Harga custom order berhasil diset. Status pesanan sekarang Menunggu Pembayaran dari klien.');
         }
@@ -54,5 +58,56 @@ class OrderController extends Controller
         ]);
 
         return redirect()->route('admin.orders.show', $order->id)->with('success', 'Pesanan berhasil dibatalkan secara manual.');
+    }
+
+    public function verifyPayment(Order $order)
+    {
+        if ($order->status !== 'pending_verification') {
+            return back()->with('error', 'Pesanan ini tidak memerlukan verifikasi pembayaran.');
+        }
+
+        $order->update(['status' => 'paid']);
+        if ($order->payment) {
+            $order->payment->update(['status' => 'success']);
+        }
+
+        return redirect()->route('admin.orders.show', $order->id)->with('success', 'Pembayaran telah diverifikasi. Pesanan ditandai Lunas.');
+    }
+
+    public function rejectPayment(Order $order)
+    {
+        if ($order->status !== 'pending_verification') {
+            return back()->with('error', 'Pesanan ini tidak memerlukan verifikasi pembayaran.');
+        }
+
+        $order->update(['status' => 'pending']);
+        if ($order->payment) {
+            $order->payment->update(['status' => 'failed']);
+        }
+
+        return redirect()->route('admin.orders.show', $order->id)->with('success', 'Bukti pembayaran ditolak. Status dikembalikan ke Pending.');
+    }
+
+    public function rejectCustomForm(Request $request, Order $order)
+    {
+        if ($order->status !== 'pending_review' || $order->package_id) {
+            return back()->with('error', 'Hanya Custom Order yang butuh review awal yang bisa ditolak lewat skema ini.');
+        }
+
+        $request->validate([
+            'reject_reason' => 'required|string|max:500'
+        ]);
+
+        $customDetails = $order->custom_details ?? [];
+        $customDetails['reject_reason'] = $request->reject_reason;
+
+        $order->update([
+            'status' => 'cancelled',
+            'custom_details' => $customDetails
+        ]);
+
+        $order->user->notify(new CustomOrderReviewed($order, 'Ditolak', $request->reject_reason));
+
+        return redirect()->route('admin.orders.show', $order->id)->with('success', 'Custom Order berhasil ditolak. Notifikasi telah dikirim ke pelanggan.');
     }
 }

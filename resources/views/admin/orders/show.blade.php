@@ -93,6 +93,23 @@
                     </div>
                 </div>
 
+                @if($order->custom_details)
+                    <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800/50">
+                        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Detail Permintaan Website (Klien)</h3>
+                        <div class="bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-500/20">
+                            <div class="grid sm:grid-cols-2 gap-6 mb-4">
+                                <div><span class="block text-xs uppercase text-indigo-500 dark:text-indigo-400 font-bold mb-1">Nama Proyek</span><span class="font-medium text-slate-900 dark:text-white">{{ $order->custom_details['project_name'] ?? '-' }}</span></div>
+                                <div><span class="block text-xs uppercase text-indigo-500 dark:text-indigo-400 font-bold mb-1">Kategori / Tipe</span><span class="font-medium text-slate-900 dark:text-white">{{ $order->custom_details['category'] ?? '-' }}</span></div>
+                                <div><span class="block text-xs uppercase text-indigo-500 dark:text-indigo-400 font-bold mb-1">Budget Maksimal</span><span class="font-medium text-amber-600 dark:text-amber-400">{{ $order->custom_details['budget'] ?? 'Tidak diisi' }}</span></div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-indigo-200/50 dark:border-indigo-500/20">
+                                <span class="block text-xs uppercase text-indigo-500 dark:text-indigo-400 font-bold mb-2">Deskripsi Requirement</span>
+                                <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{{ $order->custom_details['description'] ?? '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Total Harga/Tagihan</p>
@@ -147,12 +164,25 @@
                                     <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span>
                                 @enderror
                             </div>
-                            <button type="submit" class="w-full py-3 px-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm rounded-xl hover:opacity-90 transition-opacity">
-                                Simpan & Tagih Klien
-                            </button>
-                        </form>
+                                <button type="submit" class="w-full py-3 px-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm rounded-xl hover:opacity-90 transition-opacity">
+                                    Simpan & Tagih Klien
+                                </button>
+                            </form>
+
+                            <div class="mt-6 pt-6 border-t border-fuchsia-500/20">
+                                <form action="{{ route('admin.orders.reject_form', $order->id) }}" method="POST" onsubmit="return confirm('Tolak dan batalkan form pesanan Kustom ini?');">
+                                    @csrf
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-semibold text-rose-500 dark:text-rose-400 uppercase mb-2">Tolak Order Ini (Sertakan Alasan)</label>
+                                        <textarea name="reject_reason" required rows="2" placeholder="Cth: Maaf, kapasitas tim kami penuh..." class="w-full rounded-xl border-rose-300 dark:border-rose-700/50 bg-rose-50 dark:bg-rose-900/10 text-slate-900 dark:text-white focus:ring-rose-500 focus:border-rose-500 text-sm"></textarea>
+                                    </div>
+                                    <button type="submit" class="w-full py-3 px-4 bg-rose-100 hover:bg-rose-200 text-rose-700 dark:bg-rose-500/20 dark:hover:bg-rose-500/30 dark:text-rose-400 font-bold text-sm rounded-xl transition-colors border border-rose-200 dark:border-rose-700/50">
+                                        Kembalikan / Tolak Penawaran
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                </div>
             @else
                 <div class="bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-6 text-center">
                     <div class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3 text-slate-400">
@@ -160,6 +190,45 @@
                     </div>
                     <h3 class="font-bold text-slate-900 dark:text-white">Aksi Terkunci</h3>
                     <p class="text-sm text-slate-500 mt-2">Pesanan ini sudah bukan lagi dalam fase peninjauan ("pending_review") atau merupakan pesanan Reguler. Tidak ada aksi khusus yang diperlukan Admin terkait harga.</p>
+                </div>
+            @endif
+
+            @if($order->status === 'pending_verification')
+                <div class="bg-blue-50 dark:bg-blue-500/10 rounded-[2.5rem] border border-blue-200 dark:border-blue-500/20 p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <h3 class="font-bold text-blue-900 dark:text-blue-300">Verifikasi Pembayaran</h3>
+                    </div>
+                    <p class="text-sm text-blue-700 dark:text-blue-400 mb-6 leading-relaxed">
+                        Pelanggan telah mengunggah bukti transfer. Silakan periksa mutasi rekening sebelum menyetujui.
+                    </p>
+                    
+                    @if(optional($order->payment)->proof_image)
+                        <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                            <a href="{{ asset('storage/' . $order->payment->proof_image) }}" target="_blank">
+                                <img src="{{ asset('storage/' . $order->payment->proof_image) }}" alt="Bukti Pembayaran" class="w-full object-contain max-h-64 mt-2">
+                            </a>
+                            <p class="text-xs text-center text-slate-500 py-2">Klik gambar untuk melihat penuh</p>
+                        </div>
+                    @endif
+
+                    <div class="space-y-3">
+                        <form action="{{ route('admin.orders.verify_payment', $order->id) }}" method="POST" onsubmit="return confirm('Tandai pesanan ini lunas?');">
+                            @csrf
+                            <button type="submit" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-colors shadow-lg shadow-emerald-600/30 border border-emerald-700/50">
+                                Terima & Tandai Lunas
+                            </button>
+                        </form>
+
+                        <form action="{{ route('admin.orders.reject_payment', $order->id) }}" method="POST" onsubmit="return confirm('Tolak bukti pembayaran ini? Status pesanan akan dikembalikan menjadi Pending.');">
+                            @csrf
+                            <button type="submit" class="w-full py-3 px-4 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-bold text-sm rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                Tolak Bukti
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endif
 

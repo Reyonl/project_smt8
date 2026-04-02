@@ -16,7 +16,7 @@
             Pilih Paket <span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-blue-500">Website</span> Anda
         </h1>
         <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Investasi cerdas untuk pertumbuhan bisnis digital. Pembayaran aman via Midtrans, pantau status pesanan secara real-time.
+            Investasi cerdas untuk pertumbuhan bisnis digital. Pembayaran mudah dan cepat, pantau status pesanan secara real-time.
         </p>
     </div>
 </div>

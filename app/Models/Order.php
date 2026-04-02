@@ -11,7 +11,12 @@ class Order extends Model
         'package_id',
         'order_code',
         'price',
-        'status'
+        'status',
+        'custom_details'
+    ];
+
+    protected $casts = [
+        'custom_details' => 'array',
     ];
 
     public function package()

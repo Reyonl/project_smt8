@@ -21,6 +21,30 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="mb-8 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-start gap-4">
+            <div class="p-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-full text-emerald-600 dark:text-emerald-400 shrink-0">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <h4 class="font-semibold text-emerald-800 dark:text-emerald-400">Berhasil!</h4>
+                <p class="text-emerald-600 dark:text-emerald-300 text-sm mt-1">{{ session('success') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-8 p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-2xl flex items-start gap-4">
+            <div class="p-2 bg-rose-100 dark:bg-rose-500/20 rounded-full text-rose-600 dark:text-rose-400 shrink-0">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <h4 class="font-semibold text-rose-800 dark:text-rose-400">Gagal</h4>
+                <p class="text-rose-600 dark:text-rose-300 text-sm mt-1">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
     @if(session('info'))
         <div class="mb-8 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-start gap-4">
             <div class="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-full text-blue-600 dark:text-blue-400 shrink-0">

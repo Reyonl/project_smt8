@@ -27,9 +27,7 @@ Route::get('/packages', [PackageController::class, 'index'])->name('packages');
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', function () {
-        return view('user.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [OrderController::class, 'dashboard'])->name('dashboard');
 
     Route::get('/checkout/{id}', [OrderController::class, 'checkout'])->name('checkout');
 
@@ -43,8 +41,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/checkout/retry/{order}', [OrderController::class, 'retry'])->name('checkout.retry');
 
-    // Receive payment result posted from client (Snap onSuccess/onPending/onError)
-    Route::post('/payment/result', [OrderController::class, 'paymentResult'])->name('payment.result');
+    // Manual Payment Routes
+    Route::get('/payment/manual/{order}', [OrderController::class, 'manualPayment'])->name('payment.manual');
+    Route::post('/payment/manual/{order}/process', [OrderController::class, 'processManualPayment'])->name('payment.manual.process');
 
 });
 
@@ -65,7 +64,13 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     Route::get('/orders', [AdminOrderController::class,'index'])->name('admin.orders');
     Route::get('/orders/{order}', [AdminOrderController::class,'show'])->name('admin.orders.show');
     Route::put('/orders/{order}/update-price', [AdminOrderController::class,'updatePrice'])->name('admin.orders.update_price');
-    Route::put('/orders/{order}/cancel', [AdminOrderController::class,'cancel'])->name('admin.orders.cancel');
+    Route::post('/orders/{order}/reject-custom', [AdminOrderController::class,'rejectCustomForm'])->name('admin.orders.reject_form');
+    Route::post('/orders/{order}/verify-payment', [AdminOrderController::class,'verifyPayment'])->name('admin.orders.verify_payment');
+    Route::post('/orders/{order}/reject-payment', [AdminOrderController::class,'rejectPayment'])->name('admin.orders.reject_payment');
+    Route::get('/orders/{order}/cancel', [AdminOrderController::class,'cancel'])->name('admin.orders.cancel');
+
+    // Admin Report (Printable)
+    Route::get('/report', [AdminController::class,'report'])->name('admin.report');
 
 });
 
@@ -87,6 +92,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
-// Midtrans server-to-server notification (no CSRF token provided by Midtrans)
-Route::post('/payment/notification', [OrderController::class, 'notification'])->name('payment.notification');
