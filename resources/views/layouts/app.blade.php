@@ -51,12 +51,14 @@
                             </a>
 
                             <nav class="hidden items-center gap-1 md:flex">
-                                <a href="{{ route('home') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
-                                    Beranda
-                                </a>
-                                <a href="{{ route('packages') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
-                                    Paket
-                                </a>
+                                @if(!auth()->check() || auth()->user()->role !== 'admin')
+                                    <a href="{{ route('home') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
+                                        Beranda
+                                    </a>
+                                    <a href="{{ route('packages') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
+                                        Paket
+                                    </a>
+                                @endif
                             </nav>
                         </div>
 
@@ -182,8 +184,11 @@
 
                     <div x-show="open" x-cloak class="pb-4 md:hidden">
                         <nav class="grid gap-1">
-                            <a href="{{ route('home') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">Beranda</a>
-                            <a href="{{ route('packages') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">Paket</a>
+                            @if(!auth()->check() || auth()->user()->role !== 'admin')
+                                <a href="{{ route('home') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">Beranda</a>
+                                <a href="{{ route('packages') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">Paket</a>
+                                <div class="my-2 h-px bg-slate-200 dark:bg-slate-800"></div>
+                            @endif
 
                             <div class="my-2 h-px bg-slate-200 dark:bg-slate-800"></div>
 

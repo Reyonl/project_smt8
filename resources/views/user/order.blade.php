@@ -69,8 +69,76 @@
             @endif
         </div>
     </div>
+
+
+    <!-- Project Timeline for User -->
+    @if(in_array($order->status, ['paid', 'processing', 'revision', 'completed']))
+        <div class="card mt-2">
+            <div class="card-body">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                    <span class="p-2 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
+                    </span>
+                    Ruang Diskusi & Progress Proyek
+                </h2>
+
+                <!-- List Updates -->
+                <div class="space-y-6 mb-8">
+                    @forelse($order->updates as $update)
+                        <div class="flex gap-4 {{ $update->is_admin_update ? 'flex-row-reverse' : '' }}">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $update->is_admin_update ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-600' }}">
+                                    {{ substr($update->user->name, 0, 1) }}
+                                </div>
+                            </div>
+                            <div class="{{ $update->is_admin_update ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700' }} border rounded-2xl p-4 max-w-xl w-full">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-bold text-sm {{ $update->is_admin_update ? 'text-indigo-900 dark:text-indigo-300' : 'text-slate-900 dark:text-white' }}">{{ $update->is_admin_update ? 'Admin Jasa Websites' : 'Anda' }}</span>
+                                    <span class="text-xs text-slate-500">{{ $update->created_at->format('d M Y, H:i') }}</span>
+                                </div>
+                                @if($update->message)
+                                    <p class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{{ $update->message }}</p>
+                                @endif
+                                @if($update->attachment_path)
+                                    <div class="mt-3">
+                                        <a href="{{ asset('storage/' . $update->attachment_path) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $update->attachment_path) }}" class="rounded-xl max-h-48 object-cover border border-slate-200 dark:border-slate-700" alt="Attachment">
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8 text-slate-500">
+                            Belum ada pesan. Admin akan mengupdate progress di sini.
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Form Balasan User -->
+                @if($order->status !== 'completed')
+                    <form action="{{ route('order.reply', $order->id) }}" method="POST" enctype="multipart/form-data" class="border-t border-slate-200 dark:border-slate-800 pt-6">
+                        @csrf
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pesan ke Admin</label>
+                            <textarea name="message" rows="3" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ketik pesan atau lampirkan materi..."></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Lampiran (Opsional)</label>
+                            <input type="file" name="attachment" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Kirim Pesan
+                        </button>
+                    </form>
+                @else
+                    <div class="text-center py-4 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl mt-6 border border-emerald-200 dark:border-emerald-500/20">
+                        Proyek ini telah ditandai Selesai. Terima kasih telah menggunakan jasa kami!
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 </div>
 
 @endsection
-
-

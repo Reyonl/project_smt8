@@ -136,6 +136,67 @@
                     </div>
                 </div>
             @endif
+
+            <!-- Project Timeline -->
+            @if(in_array($order->status, ['paid', 'processing', 'revision', 'completed']))
+                <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-8 mt-8">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                        <span class="p-2 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        </span>
+                        Project Timeline & Updates
+                    </h2>
+
+                    <!-- List Updates -->
+                    <div class="space-y-6 mb-8">
+                        @forelse($order->updates as $update)
+                            <div class="flex gap-4 {{ $update->is_admin_update ? '' : 'flex-row-reverse' }}">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $update->is_admin_update ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-600' }}">
+                                        {{ substr($update->user->name, 0, 1) }}
+                                    </div>
+                                </div>
+                                <div class="{{ $update->is_admin_update ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700' }} border rounded-2xl p-4 max-w-xl w-full">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-bold text-sm {{ $update->is_admin_update ? 'text-indigo-900 dark:text-indigo-300' : 'text-slate-900 dark:text-white' }}">{{ $update->user->name }} {{ $update->is_admin_update ? '(Admin)' : '' }}</span>
+                                        <span class="text-xs text-slate-500">{{ $update->created_at->format('d M Y, H:i') }}</span>
+                                    </div>
+                                    @if($update->message)
+                                        <p class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{{ $update->message }}</p>
+                                    @endif
+                                    @if($update->attachment_path)
+                                        <div class="mt-3">
+                                            <a href="{{ asset('storage/' . $update->attachment_path) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $update->attachment_path) }}" class="rounded-xl max-h-48 object-cover border border-slate-200 dark:border-slate-700" alt="Attachment">
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8 text-slate-500">
+                                Belum ada update proyek.
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <!-- Form Post Update -->
+                    <form action="{{ route('admin.orders.post_update', $order->id) }}" method="POST" enctype="multipart/form-data" class="border-t border-slate-200 dark:border-slate-800 pt-6">
+                        @csrf
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pesan Update / Balasan</label>
+                            <textarea name="message" rows="3" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ketik update progress atau balasan ke klien..."></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Lampiran (Opsional)</label>
+                            <input type="file" name="attachment" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
+                        <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-colors">
+                            Kirim Update
+                        </button>
+                    </form>
+                </div>
+            @endif
         </div>
 
         <!-- Right action col (Admin Action) -->
@@ -183,13 +244,31 @@
                             </div>
                         </div>
                     </div>
-            @else
-                <div class="bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-6 text-center">
-                    <div class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3 text-slate-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            @elseif(in_array($order->status, ['paid', 'processing', 'revision', 'completed']))
+                <div class="bg-indigo-50 dark:bg-indigo-500/10 rounded-[2.5rem] border border-indigo-200 dark:border-indigo-500/20 p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        </div>
+                        <h3 class="font-bold text-indigo-900 dark:text-indigo-300">Status Pengerjaan</h3>
                     </div>
-                    <h3 class="font-bold text-slate-900 dark:text-white">Aksi Terkunci</h3>
-                    <p class="text-sm text-slate-500 mt-2">Pesanan ini sudah bukan lagi dalam fase peninjauan ("pending_review") atau merupakan pesanan Reguler. Tidak ada aksi khusus yang diperlukan Admin terkait harga.</p>
+                    <p class="text-sm text-indigo-700 dark:text-indigo-400 mb-6 leading-relaxed">
+                        Perbarui status proyek agar pelanggan tahu sejauh mana progres pesanan ini.
+                    </p>
+                    <form action="{{ route('admin.orders.update_status', $order->id) }}" method="POST">
+                        @csrf
+                        <div class="mb-4">
+                            <select name="status" class="w-full rounded-xl border-indigo-300 dark:border-indigo-700/50 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="paid" {{ $order->status === 'paid' ? 'selected' : '' }} disabled>Lunas (Belum Dikerjakan)</option>
+                                <option value="processing" {{ $order->status === 'processing' ? 'selected' : '' }}>Sedang Dikerjakan</option>
+                                <option value="revision" {{ $order->status === 'revision' ? 'selected' : '' }}>Tahap Revisi</option>
+                                <option value="completed" {{ $order->status === 'completed' ? 'selected' : '' }}>Selesai / Diserahkan</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-colors shadow-lg shadow-indigo-600/30 border border-indigo-700/50">
+                            Update Status
+                        </button>
+                    </form>
                 </div>
             @endif
 

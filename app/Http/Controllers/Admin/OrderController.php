@@ -110,4 +110,43 @@ class OrderController extends Controller
 
         return redirect()->route('admin.orders.show', $order->id)->with('success', 'Custom Order berhasil ditolak. Notifikasi telah dikirim ke pelanggan.');
     }
+
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'status' => 'required|in:processing,revision,completed'
+        ]);
+
+        $order->update([
+            'status' => $request->status
+        ]);
+
+        return back()->with('success', 'Status pesanan berhasil diperbarui menjadi ' . ucfirst($request->status) . '.');
+    }
+
+    public function postUpdate(Request $request, Order $order)
+    {
+        $request->validate([
+            'message' => 'nullable|string',
+            'attachment' => 'nullable|image|max:5120'
+        ]);
+
+        if (!$request->message && !$request->file('attachment')) {
+            return back()->with('error', 'Pesan atau lampiran harus diisi.');
+        }
+
+        $path = null;
+        if ($request->hasFile('attachment')) {
+            $path = $request->file('attachment')->store('order_updates', 'public');
+        }
+
+        $order->updates()->create([
+            'user_id' => auth()->id(),
+            'message' => $request->message,
+            'attachment_path' => $path,
+            'is_admin_update' => true
+        ]);
+
+        return back()->with('success', 'Update proyek berhasil dikirim.');
+    }
 }

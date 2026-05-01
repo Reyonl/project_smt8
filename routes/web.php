@@ -34,6 +34,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('my.orders');
 
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('order.show');
+    Route::post('/orders/{order}/reply', [OrderController::class, 'postReply'])->name('order.reply');
 
     // Custom Order Routes
     Route::get('/custom-order', [OrderController::class, 'customOrderForm'])->name('custom.order');
@@ -67,7 +68,11 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     Route::post('/orders/{order}/reject-custom', [AdminOrderController::class,'rejectCustomForm'])->name('admin.orders.reject_form');
     Route::post('/orders/{order}/verify-payment', [AdminOrderController::class,'verifyPayment'])->name('admin.orders.verify_payment');
     Route::post('/orders/{order}/reject-payment', [AdminOrderController::class,'rejectPayment'])->name('admin.orders.reject_payment');
-    Route::get('/orders/{order}/cancel', [AdminOrderController::class,'cancel'])->name('admin.orders.cancel');
+    Route::put('/orders/{order}/cancel', [AdminOrderController::class,'cancel'])->name('admin.orders.cancel');
+    
+    // Admin Project Update routes
+    Route::post('/orders/{order}/update-status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.update_status');
+    Route::post('/orders/{order}/update-progress', [AdminOrderController::class, 'postUpdate'])->name('admin.orders.post_update');
 
     // Admin Report (Printable)
     Route::get('/report', [AdminController::class,'report'])->name('admin.report');

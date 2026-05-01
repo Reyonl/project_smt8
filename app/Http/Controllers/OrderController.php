@@ -163,27 +163,33 @@ class OrderController extends Controller
         return redirect()->route('custom.order')->with('success', 'Pengajuan Custom Website Anda telah kami terima. Tim kami akan segera meninjaunya dan memberikan penawaran harga.');
     }
 
-    public function index()
+    public function postReply(Request $request, Order $order)
     {
-    }
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
 
-    public function create()
-    {
-    }
+        $request->validate([
+            'message' => 'nullable|string',
+            'attachment' => 'nullable|image|max:5120'
+        ]);
 
-    public function store(Request $request)
-    {
-    }
+        if (!$request->message && !$request->file('attachment')) {
+            return back()->with('error', 'Pesan atau lampiran harus diisi.');
+        }
 
-    public function edit(Order $order)
-    {
-    }
+        $path = null;
+        if ($request->hasFile('attachment')) {
+            $path = $request->file('attachment')->store('order_updates', 'public');
+        }
 
-    public function update(Request $request, Order $order)
-    {
-    }
+        $order->updates()->create([
+            'user_id' => auth()->id(),
+            'message' => $request->message,
+            'attachment_path' => $path,
+            'is_admin_update' => false
+        ]);
 
-    public function destroy(Order $order)
-    {
+        return back()->with('success', 'Balasan berhasil dikirim.');
     }
 }

@@ -34,5 +34,8 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    
+    public function updates()
+    {
+        return $this->hasMany(OrderUpdate::class)->orderBy('created_at', 'asc');
+    }
 }
