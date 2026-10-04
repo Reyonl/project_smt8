@@ -117,7 +117,7 @@
 
                 <!-- Form Balasan User -->
                 @if($order->status !== 'completed')
-                    <form action="{{ route('order.reply', $order->id) }}" method="POST" enctype="multipart/form-data" class="border-t border-slate-200 dark:border-slate-800 pt-6">
+                    <form action="{{ route('order.reply', $order->id) }}" method="POST" enctype="multipart/form-data" class="border-t border-slate-200 dark:border-slate-800 pt-6" onsubmit="trackOrderReply('{{ $order->id }}')">
                         @csrf
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pesan ke Admin</label>
@@ -142,3 +142,15 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+function trackOrderReply(orderId) {
+    if (typeof gtag === 'function') {
+        gtag('event', 'order_reply_submit', {
+            order_id: orderId
+        });
+    }
+}
+</script>
+@endpush

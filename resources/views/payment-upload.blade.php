@@ -101,3 +101,25 @@
 </script>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (typeof gtag === 'function') {
+        gtag('event', 'add_payment_info', {
+            currency: "IDR",
+            value: {{ $order->price }},
+            payment_type: "bank_transfer",
+            items: [
+                {
+                    item_id: "{{ optional($order->package)->id ?? 'custom' }}",
+                    item_name: "{{ optional($order->package)->name ?? 'Custom Website' }}",
+                    price: {{ $order->price }},
+                    quantity: 1
+                }
+            ]
+        });
+    }
+});
+</script>
+@endpush

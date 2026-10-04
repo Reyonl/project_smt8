@@ -157,3 +157,28 @@
 </div>
 
 @endsection
+
+@push('scripts')
+@if(session('ga_purchase'))
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (typeof gtag === 'function') {
+        var purchaseData = @json(session('ga_purchase'));
+        gtag('event', 'purchase', {
+            transaction_id: purchaseData.transaction_id,
+            value: purchaseData.value,
+            currency: "IDR",
+            items: [
+                {
+                    item_id: purchaseData.item_id,
+                    item_name: purchaseData.item_name,
+                    price: purchaseData.value,
+                    quantity: 1
+                }
+            ]
+        });
+    }
+});
+</script>
+@endif
+@endpush

@@ -38,7 +38,7 @@
             </div>
         @endif
 
-        <form action="{{ route('custom.order.store') }}" method="POST">
+        <form action="{{ route('custom.order.store') }}" method="POST" onsubmit="trackCustomOrder()">
             @csrf
             
             <div class="space-y-8">
@@ -108,3 +108,15 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+function trackCustomOrder() {
+    if (typeof gtag === 'function') {
+        gtag('event', 'custom_order_submit', {
+            event_category: 'form_submit'
+        });
+    }
+}
+</script>
+@endpush

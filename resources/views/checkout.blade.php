@@ -104,3 +104,24 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (typeof gtag === 'function') {
+        gtag('event', 'begin_checkout', {
+            currency: "IDR",
+            value: {{ $order->price }},
+            items: [
+                {
+                    item_id: "{{ optional($order->package)->id ?? 'custom' }}",
+                    item_name: "{{ optional($order->package)->name ?? 'Custom Website' }}",
+                    price: {{ $order->price }},
+                    quantity: 1
+                }
+            ]
+        });
+    }
+});
+</script>
+@endpush

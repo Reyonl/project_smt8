@@ -54,11 +54,11 @@
                             </div>
 
                             @auth
-                                <a href="{{ route('checkout',$p->id) }}" class="btn btn-primary">
+                                <a href="{{ route('checkout',$p->id) }}" class="btn btn-primary" onclick="trackSelect('{{ $p->id }}', '{{ $p->name }}', {{ $p->price }})">
                                     Order
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="btn btn-outline">
+                                <a href="{{ route('login') }}" class="btn btn-outline" onclick="trackSelect('{{ $p->id }}', '{{ $p->name }}', {{ $p->price }})">
                                     Login untuk order
                                 </a>
                             @endauth
@@ -81,4 +81,38 @@
 
 @endsection
 
+@push('scripts')
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (typeof gtag === 'function') {
+        gtag('event', 'view_item_list', {
+            item_list_id: "packages",
+            item_list_name: "Packages",
+            items: [
+                @foreach($packages as $p)
+                {
+                    item_id: "{{ $p->id }}",
+                    item_name: "{{ $p->name }}",
+                    price: {{ $p->price }}
+                }@if(!$loop->last),@endif
+                @endforeach
+            ]
+        });
+    }
+});
 
+function trackSelect(id, name, price) {
+    if (typeof gtag === 'function') {
+        gtag('event', 'select_item', {
+            item_list_id: "packages",
+            item_list_name: "Packages",
+            items: [{
+                item_id: id,
+                item_name: name,
+                price: price
+            }]
+        });
+    }
+}
+</script>
+@endpush

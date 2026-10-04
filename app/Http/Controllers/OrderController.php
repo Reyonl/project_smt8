@@ -80,7 +80,15 @@ class OrderController extends Controller
         $order->status = 'pending_verification';
         $order->save();
 
-        return redirect()->route('my.orders')->with('success', 'Bukti pembayaran berhasil diunggah. Silakan menunggu konfirmasi Admin.');
+        return redirect()->route('my.orders')->with([
+            'success' => 'Bukti pembayaran berhasil diunggah. Silakan menunggu konfirmasi Admin.',
+            'ga_purchase' => [
+                'transaction_id' => $order->order_code,
+                'value' => $order->price,
+                'item_id' => optional($order->package)->id ?? 'custom',
+                'item_name' => optional($order->package)->name ?? 'Custom Website'
+            ]
+        ]);
     }
 
     /**
