@@ -77,7 +77,7 @@
                                 @endif
                             </td>
                             <td class="px-8 py-5 whitespace-nowrap">
-                                @if($o->status === 'paid')
+                                @if($o->isPaid())
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Lunas
                                     </span>

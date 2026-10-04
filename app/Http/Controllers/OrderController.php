@@ -14,8 +14,8 @@ class OrderController extends Controller
         $user = auth()->user();
         $totalOrders = Order::where('user_id', $user->id)->count();
         $pendingOrders = Order::where('user_id', $user->id)->where('status', 'pending')->count();
-        $paidOrders = Order::where('user_id', $user->id)->where('status', 'paid')->count();
-        $totalSpent = Order::where('user_id', $user->id)->where('status', 'paid')->sum('price');
+        $paidOrders = Order::where('user_id', $user->id)->paid()->count();
+        $totalSpent = Order::where('user_id', $user->id)->paid()->sum('price');
         $recentOrders = Order::where('user_id', $user->id)->with('package')->latest()->take(5)->get();
 
         return view('user.dashboard', compact(

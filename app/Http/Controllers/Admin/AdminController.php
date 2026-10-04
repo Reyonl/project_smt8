@@ -13,10 +13,10 @@ class AdminController extends Controller
     public function index()
     {
         $totalOrders = Order::count();
-        $totalRevenue = Order::where('status','paid')->sum('price');
+        $totalRevenue = Order::paid()->sum('price');
         $totalPackages = Package::count();
         $pendingOrders = Order::where('status','pending')->count();
-        $paidOrders = Order::where('status','paid')->count();
+        $paidOrders = Order::paid()->count();
         $failedOrders = Order::where('status','failed')->count();
         $reviewOrders = Order::where('status','pending_review')->count();
 
@@ -24,7 +24,7 @@ class AdminController extends Controller
         $monthlyRevenue = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
-            $revenue = Order::where('status', 'paid')
+            $revenue = Order::paid()
                 ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->sum('price');
@@ -38,7 +38,7 @@ class AdminController extends Controller
         $ordersThisMonth = Order::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
-        $revenueThisMonth = Order::where('status', 'paid')
+        $revenueThisMonth = Order::paid()
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('price');
@@ -66,9 +66,9 @@ class AdminController extends Controller
     public function report()
     {
         $totalOrders = Order::count();
-        $totalRevenue = Order::where('status','paid')->sum('price');
+        $totalRevenue = Order::paid()->sum('price');
         $pendingOrders = Order::where('status','pending')->count();
-        $paidOrders = Order::where('status','paid')->count();
+        $paidOrders = Order::paid()->count();
         $failedOrders = Order::where('status','failed')->count();
 
         $orders = Order::with('user', 'package', 'payment')->latest()->get();
@@ -82,8 +82,8 @@ class AdminController extends Controller
             $monthlyRevenue[] = [
                 'month' => $date->translatedFormat('F Y'),
                 'total_orders' => (clone $monthOrders)->count(),
-                'paid_orders' => (clone $monthOrders)->where('status', 'paid')->count(),
-                'revenue' => (clone $monthOrders)->where('status', 'paid')->sum('price'),
+                'paid_orders' => (clone $monthOrders)->paid()->count(),
+                'revenue' => (clone $monthOrders)->paid()->sum('price'),
             ];
         }
 

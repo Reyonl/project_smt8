@@ -38,4 +38,20 @@ class Order extends Model
     {
         return $this->hasMany(OrderUpdate::class)->orderBy('created_at', 'asc');
     }
+
+    /**
+     * Check if the order is considered paid (Lunas).
+     */
+    public function isPaid(): bool
+    {
+        return in_array($this->status, ['paid', 'processing', 'revision', 'completed']);
+    }
+
+    /**
+     * Scope for orders considered paid (Lunas).
+     */
+    public function scopePaid($query)
+    {
+        return $query->whereIn('status', ['paid', 'processing', 'revision', 'completed']);
+    }
 }

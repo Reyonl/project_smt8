@@ -118,7 +118,7 @@
                                 <p class="text-xs text-slate-500 mt-0.5">{{ $o->created_at->format('d M Y') }} · Rp {{ number_format($o->price, 0, ',', '.') }}</p>
                             </div>
                             <div>
-                                @if($o->status === 'paid')
+                                @if($o->isPaid())
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Lunas
                                     </span>

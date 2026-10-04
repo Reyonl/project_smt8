@@ -80,7 +80,7 @@
                     <div>
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Status Pembayaran</p>
                         <div class="mt-2">
-                            @if($order->status === 'paid')
+                            @if($order->isPaid())
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Lunas</span>
                             @elseif($order->status === 'pending_review')
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Menunggu Review Admin</span>
@@ -312,7 +312,7 @@
             @endif
 
             <!-- Cancel Button Area -->
-            @if($order->status !== 'paid' && $order->status !== 'cancelled' && $order->status !== 'failed')
+            @if(!$order->isPaid() && $order->status !== 'cancelled' && $order->status !== 'failed')
                 <div class="bg-rose-50 dark:bg-rose-500/10 rounded-[2.5rem] border border-rose-200 dark:border-rose-500/20 p-6">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="p-2 bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg">

@@ -40,7 +40,7 @@
                 <div>
                     <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Status</p>
                     <div class="mt-1">
-                        @if($order->status === 'paid')
+                        @if($order->isPaid())
                             <span class="badge badge-success">Lunas</span>
                         @elseif($order->status === 'pending')
                             <span class="badge badge-warning">Menunggu</span>

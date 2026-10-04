@@ -377,7 +377,7 @@
                         </td>
                         <td>{{ optional($o->payment)->payment_method ?? '—' }}</td>
                         <td>
-                            @if($o->status === 'paid')
+                            @if($o->isPaid())
                                 <span class="status paid">Lunas</span>
                             @elseif($o->status === 'pending')
                                 <span class="status pending">Pending</span>
